@@ -1,0 +1,38 @@
+name: DEPLOY 
+
+on:
+ push:
+  branches:
+    - main
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure Git
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.TOKEN }}
+      
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 14.x
+
+      - name: Install and Build 🔧 
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy 🚀
+        env:
+          username: kaltepeter
+          email: ${{ secrets.GH_EMAIL }}
+        run: |
+          git config user.name $username
+          git config user.email $email
+          git remote set-url origin https://$username:${{ secrets.TOKEN }}@github.com/kaltepeter/notes.git
+          npm run deploy
